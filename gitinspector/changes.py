@@ -43,6 +43,13 @@ class FileDiff(object):
             self.insertions = commit_line[1].count("+")
             self.deletions = commit_line[1].count("-")
 
+    def get_stats(self):
+        return {
+            'name': self.name,
+            'insertions': self.insertions,
+            'deletions': self.deletions
+        }
+
     @staticmethod
     def is_filediff_line(string):
         string = string.split("|")
@@ -87,6 +94,18 @@ class Commit(object):
 
     def get_filediffs(self):
         return self.filediffs
+
+    def get_stats(self):
+        result = {}
+        result[self.sha] = {
+            'timestamp': self.timestamp,
+            'date': self.date,
+            'sha': self.sha,
+            'author': self.author,
+            'email': self.email,
+            'filediffs': [filediff.get_stats() for filediff in self.filediffs]
+        }
+        return result
 
     @staticmethod
     def get_author_and_email(string):

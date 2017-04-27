@@ -27,7 +27,7 @@ import zipfile
 from .localization import N_
 from . import basedir, localization, terminal, version
 
-__available_formats__ = ["html", "htmlembedded", "json", "text", "xml"]
+__available_formats__ = ["html", "htmlembedded", "json", "text", "xml", "json_simple"]
 
 DEFAULT_FORMAT = __available_formats__[3]
 
@@ -147,6 +147,8 @@ def output_header(repos):
             print("\t</repositories>")
 
         print("\t<report-date>" + time.strftime("%Y/%m/%d") + "</report-date>")
+    elif __selected_format__ == "json_simple":
+        pass
     else:
         print(textwrap.fill(_(INFO_ONE_REPOSITORY if len(repos) <= 1 else INFO_MANY_REPOSITORIES).format(
             repos_string, localization.get_date()), width=terminal.get_size()[0]))

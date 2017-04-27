@@ -51,6 +51,8 @@ class Runner(object):
         self.grading = False
         self.timeline = False
         self.useweeks = False
+        self.elastic_host = None
+        self.elastic_key = None
 
     def process(self, repos):
         localization.check_compatibility(version.__version__)
@@ -81,9 +83,11 @@ class Runner(object):
             os.chdir(previous_directory)
 
         format.output_header(repos)
-        outputable.output(ChangesOutput(summed_changes))
+        outputable.output(ChangesOutput(summed_changes,
+                                        elastic_host=self.elastic_host,
+                                        elastic_key=self.elastic_key))
 
-        if changes.get_commits():
+        if changes.get_commits() and not self.elastic_host and not self.elastic_key:
             outputable.output(BlameOutput(summed_changes, summed_blames))
 
             if self.timeline:
@@ -142,7 +146,8 @@ def main():
                                                                     "localize-output:true",
                                                                     "metrics:true", "responsibilities:true", "since=",
                                                                     "grading:true",
-                                                                    "timeline:true", "until=", "version", "weeks:true"])
+                                                                    "timeline:true", "until=", "version", "weeks:true",
+                                                                    "elastic-host=", "elastic-key="])
         repos = __get_validated_git_repos__(set(args))
 
         # We need the repos above to be set before we read the git config.
@@ -160,6 +165,10 @@ def main():
                     raise format.InvalidFormatError(_("specified output format not supported."))
             elif o == "-H":
                 run.hard = True
+            elif o == "--elastic-host":
+                run.elastic_host = a
+            elif o == "--elastic-key":
+                run.elastic_key = a
             elif o == "--hard":
                 run.hard = optval.get_boolean_argument(a)
             elif o == "-l":

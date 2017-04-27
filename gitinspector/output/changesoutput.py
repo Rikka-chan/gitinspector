@@ -21,6 +21,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 import json
 import textwrap
+import requests
 from ..localization import N_
 from .. import format, gravatar, terminal
 from .outputable import Outputable
@@ -29,9 +30,31 @@ HISTORICAL_INFO_TEXT = N_("The following historical commit information, by autho
 NO_COMMITED_FILES_TEXT = N_("No commited files with the specified extensions were found")
 
 
+class ElasticSender:
+    def __init__(self, host, key):
+        self._host = host
+        self._key = key
+        requests.put(self._host + self._key,
+                     headers={
+                         "Content-Type": "application/json"
+                     })
+
+    def put(self, index,  data):
+        path = "{host}{key}external/{index}".format(host=self._host,
+                                                    key=self._key,
+                                                    index=index)
+        r = requests.put(path,
+                         data=json.dumps(data),
+                         headers={
+                             "Content-Type": "application/json"
+                         })
+
+
 class ChangesOutput(Outputable):
-    def __init__(self, changes):
+    def __init__(self, changes, elastic_host=None, elastic_key=None):
         self.changes = changes
+        self.elastic_host = elastic_host or 'http://localhost:9200'
+        self.elastic_key = elastic_key or '/repos/'
         Outputable.__init__(self)
 
     def output_html(self):
@@ -194,3 +217,11 @@ class ChangesOutput(Outputable):
             print("\t<changes>\n" + message_xml + "\t\t<authors>\n" + changes_xml + "\t\t</authors>\n\t</changes>")
         else:
             print("\t<changes>\n\t\t<exception>" + _(NO_COMMITED_FILES_TEXT) + "</exception>\n\t</changes>")
+
+    def output_json_simple(self):
+        commits = self.changes.get_commits()
+        sender = ElasticSender(self.elastic_host, self.elastic_key)
+
+        for commit in commits:
+            for key in commit.get_stats():
+                sender.put(key, commit.get_stats()[key])
