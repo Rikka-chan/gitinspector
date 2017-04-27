@@ -23,7 +23,6 @@ import sys
 from .extensions import DEFAULT_EXTENSIONS
 from .format import __available_formats__
 
-
 __doc__ = _("""Usage: {0} [OPTION]... [REPOSITORY]...
 List information about the repository in REPOSITORY. If no repository is
 specified, the current directory is used. If multiple repositories are
@@ -78,5 +77,6 @@ more information.
 gitinspector requires that the git executable is available in your PATH.
 Report gitinspector bugs to gitinspector@ejwa.se.""")
 
+
 def output():
-	print(__doc__.format(sys.argv[0], ",".join(DEFAULT_EXTENSIONS), ",".join(__available_formats__)))
+    print(__doc__.format(sys.argv[0], ",".join(DEFAULT_EXTENSIONS), ",".join(__available_formats__)))

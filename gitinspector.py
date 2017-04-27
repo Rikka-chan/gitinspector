@@ -21,4 +21,4 @@
 from gitinspector import gitinspector
 
 if __name__ == "__main__":
-	gitinspector.main()
+    gitinspector.main()

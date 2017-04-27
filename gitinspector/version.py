@@ -20,6 +20,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 from . import localization
+
 localization.init()
 
 __version__ = "0.5.0dev"
@@ -30,5 +31,7 @@ This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 
 Written by Adam Waldenberg.""")
+
+
 def output():
-	print("gitinspector {0}\n".format(__version__) + __doc__)
+    print("gitinspector {0}\n".format(__version__) + __doc__)
