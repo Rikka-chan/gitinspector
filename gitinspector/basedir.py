@@ -22,6 +22,10 @@ import subprocess
 import sys
 
 
+class DirIsNotRepo(Exception):
+    pass
+
+
 def get_basedir():
     if hasattr(sys, "frozen"):  # exists when running via py2exe
         return sys.prefix
@@ -43,7 +47,8 @@ def get_basedir_git(path=None):
     bare_command.wait()
 
     if bare_command.returncode != 0:
-        sys.exit(_("Error processing git repository at \"%s\"." % os.getcwd()))
+        raise DirIsNotRepo("Error processing git repository at \"%s\"." % os.getcwd())
+        # sys.exit(_("Error processing git repository at \"%s\"." % os.getcwd()))
 
     isbare = (isbare[0].decode("utf-8", "replace").strip() == "true")
     absolute_path = None
