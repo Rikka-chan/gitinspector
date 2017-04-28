@@ -225,5 +225,5 @@ class ChangesOutput(Outputable):
         for commit in commits:
             for key in commit.get_stats():
                 data = commit.get_stats()[key]
-                data['repo'] = self.changes.repo
+                data['repo'] = self.changes.repo.name
                 sender.put(key, data)
