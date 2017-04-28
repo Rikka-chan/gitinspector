@@ -128,7 +128,7 @@ def __get_validated_git_repos__(repos_relative):
 
             if cloned_repo.name == None:
                 cloned_repo.name = os.path.basename(basedir_path)
-    
+
             repos.append(cloned_repo)
         except basedir.DirIsNotRepo as ex:
             print(ex)

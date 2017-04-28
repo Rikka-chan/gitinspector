@@ -209,6 +209,7 @@ class Changes(object):
     emails_by_author = {}
 
     def __init__(self, repo, hard):
+        self.repo = repo
         self.commits = []
         git_log_hashes_r = subprocess.Popen(filter(None, ["git", "rev-list", "--reverse", "--no-merges",
                                                           interval.get_since(), interval.get_until(), "HEAD"]),
