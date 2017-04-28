@@ -51,7 +51,7 @@ class ElasticSender:
 
 
 class ChangesOutput(Outputable):
-    def __init__(self, changes, elastic_host=None, elastic_key=None):
+    def __init__(self, changes, elastic_host=None, elastic_key=None, repo=None):
         self.changes = changes
         self.elastic_host = elastic_host or 'http://localhost:9200'
         self.elastic_key = elastic_key or '/repos/'
@@ -224,6 +224,6 @@ class ChangesOutput(Outputable):
 
         for commit in commits:
             for key in commit.get_stats():
-                data = commit.get_stats()[key]
-                data['repo'] = self.changes.repo.name
-                sender.put(key, data)
+                # data = commit.get_stats()[key]
+                # data['repo'] = self.changes.repo.name
+                sender.put(key, commit.get_stats()[key])

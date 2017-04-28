@@ -69,7 +69,8 @@ class Runner(object):
 
         for repo in repos:
             os.chdir(repo.location)
-            repo = repo if len(repos) > 1 else None
+            if not format.get_selected() == 'json_simple':
+                repo = repo if len(repos) > 1 else None
             changes = Changes(repo, self.hard)
             summed_blames += Blame(repo, self.hard, self.useweeks, changes)
             summed_changes += changes

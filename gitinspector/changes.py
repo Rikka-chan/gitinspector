@@ -75,7 +75,7 @@ class FileDiff(object):
 
 
 class Commit(object):
-    def __init__(self, string):
+    def __init__(self, string, repo):
         self.filediffs = []
         commit_line = string.split("|")
 
@@ -85,6 +85,7 @@ class Commit(object):
             self.sha = commit_line[2]
             self.author = commit_line[3].strip()
             self.email = commit_line[4].strip()
+        self.repo = repo
 
     def __lt__(self, other):
         return self.timestamp.__lt__(other.timestamp)  # only used for sorting; we just consider the timestamp.
@@ -103,7 +104,8 @@ class Commit(object):
             'sha': self.sha,
             'author': self.author,
             'email': self.email,
-            'filediffs': [filediff.get_stats() for filediff in self.filediffs]
+            'filediffs': [filediff.get_stats() for filediff in self.filediffs],
+            'repo': self.repo.name
         }
         return result
 
@@ -127,7 +129,7 @@ class AuthorInfo(object):
 
 
 class ChangesThread(threading.Thread):
-    def __init__(self, hard, changes, first_hash, second_hash, offset):
+    def __init__(self, hard, changes, first_hash, second_hash, offset, repo):
         __thread_lock__.acquire()  # Lock controlling the number of threads running
         threading.Thread.__init__(self)
 
@@ -136,10 +138,11 @@ class ChangesThread(threading.Thread):
         self.first_hash = first_hash
         self.second_hash = second_hash
         self.offset = offset
+        self.repo = repo
 
     @staticmethod
-    def create(hard, changes, first_hash, second_hash, offset):
-        thread = ChangesThread(hard, changes, first_hash, second_hash, offset)
+    def create(hard, changes, first_hash, second_hash, offset, repo):
+        thread = ChangesThread(hard, changes, first_hash, second_hash, offset, repo)
         thread.daemon = True
         thread.start()
 
@@ -176,7 +179,7 @@ class ChangesThread(threading.Thread):
 
                 found_valid_extension = False
                 is_filtered = False
-                commit = Commit(j)
+                commit = Commit(j, self.repo)
 
                 if Commit.is_commit_line(j) and \
                         (filtering.set_filtered(commit.author, "author") or \
@@ -209,7 +212,6 @@ class Changes(object):
     emails_by_author = {}
 
     def __init__(self, repo, hard):
-        self.repo = repo
         self.commits = []
         git_log_hashes_r = subprocess.Popen(filter(None, ["git", "rev-list", "--reverse", "--no-merges",
                                                           interval.get_since(), interval.get_until(), "HEAD"]),
@@ -230,7 +232,7 @@ class Changes(object):
                 if i % CHANGES_PER_THREAD == CHANGES_PER_THREAD - 1:
                     entry = entry.decode("utf-8", "replace").strip()
                     second_hash = entry
-                    ChangesThread.create(hard, self, first_hash, second_hash, i)
+                    ChangesThread.create(hard, self, first_hash, second_hash, i, repo)
                     first_hash = entry + ".."
 
                     if format.is_interactive_format():
@@ -238,7 +240,7 @@ class Changes(object):
             else:
                 entry = entry.decode("utf-8", "replace").strip()
                 second_hash = entry
-                ChangesThread.create(hard, self, first_hash, second_hash, i)
+                ChangesThread.create(hard, self, first_hash, second_hash, i, repo)
 
         # Make sure all threads have completed.
         for i in range(0, NUM_THREADS):
